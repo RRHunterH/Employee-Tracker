@@ -1,6 +1,9 @@
 CREATE TABLE departments (
-    department_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(50) NOT NULL,
+    location VARCHAR(100),
+    manager_id INT,
+    creation_date DATE
 );
 
 CREATE TABLE roles (
