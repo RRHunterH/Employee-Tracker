@@ -32,23 +32,24 @@ async function dbConnection(select) {
         }
         break;
 
-      case "View All Roles":
-        try {
-          const returnedRowsFromDb = await db.query(`
-            SELECT
-                roles.id,
-                roles.title,
-                roles.salary,
-                departments.name AS department
-            FROM roles
-            JOIN departments ON roles.department_id = departments.id
-          `);
-          console.table(returnedRowsFromDb[0]);
-        } catch (error) {
-          console.error("Error viewing roles:", error.message);
-        }
-        break;
+        case "View All Roles":
+          try {
+              const [rolesData] = await db.query(`
+                  SELECT
+                      roles.role_id,
+                      roles.title,
+                      roles.salary,
+                      departments.name AS department
+                  FROM roles
+                  JOIN departments ON roles.department_id = departments.department_id
+              `);
 
+              console.table(rolesData);
+          } catch (error) {
+              console.error("Error viewing roles:", error.message);
+          }
+          break;
+          
       case "View All Employees":
         try {
           const returnedRowsFromDb = await db.query(`
