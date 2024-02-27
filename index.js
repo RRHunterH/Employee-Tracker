@@ -34,43 +34,43 @@ async function dbConnection(select) {
 
         case "View All Roles":
           try {
-              const [rolesData] = await db.query(`
-                  SELECT
-                      roles.role_id,
-                      roles.title,
-                      roles.salary,
-                      departments.name AS department
-                  FROM roles
-                  JOIN departments ON roles.department_id = departments.department_id
-              `);
-
-              console.table(rolesData);
+            const rolesData = await db.query(`
+              SELECT
+                  roles.role_id,
+                  roles.title,
+                  roles.salary,
+                  departments.name AS department
+              FROM roles
+              JOIN departments ON roles.department_id = departments.department_id
+            `);
+        
+            console.table(rolesData[0]);
           } catch (error) {
-              console.error("Error viewing roles:", error.message);
+            console.error("Error viewing roles:", error.message);
           }
           break;
-          
-      case "View All Employees":
-        try {
-          const returnedRowsFromDb = await db.query(`
-            SELECT
-                employees.id,
-                employees.first_name,
-                employees.last_name,
-                roles.title AS title,
-                departments.name AS department,
-                roles.salary AS salary,
-                CONCAT(manager.first_name, ' ', manager.last_name) AS manager
-            FROM employees
-            JOIN roles ON employees.role_id = roles.id
-            JOIN departments ON roles.department_id = departments.id
-            LEFT JOIN employees AS manager ON employees.manager_id = manager.id
-          `);
-          console.table(returnedRowsFromDb[0]);
-        } catch (error) {
-          console.error("Error viewing employees:", error.message);
-        }
-        break;
+
+     case "View All Employees":
+    try {
+      const returnedRowsFromDb = await db.query(`
+      SELECT
+        employees.employee_id,
+        employees.first_name,
+        employees.last_name,
+        roles.title AS title,
+        departments.name AS department,
+        roles.salary AS salary,
+        CONCAT(manager.first_name, ' ', manager.last_name) AS manager
+      FROM employees
+      JOIN roles ON employees.role_id = roles.role_id
+      JOIN departments ON roles.department_id = departments.department_id
+      LEFT JOIN employees AS manager ON employees.manager_id = manager.employee_id
+    `);
+        console.table(returnedRowsFromDb[0]);
+    } catch (error) {
+        console.error("Error viewing employees:", error.message);
+    }
+    break;
 
       case "Add a Department":
         const departmentInput = await inquirer.prompt([
@@ -114,7 +114,7 @@ async function dbConnection(select) {
           await db.query(
             "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)",
             [roleInput.title, roleInput.salary, roleInput.departmentId]
-          );
+          );                       
 
           console.log("Role added successfully!");
         } catch (error) {
