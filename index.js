@@ -85,133 +85,131 @@ async function dbConnection(select) {
         console.log("Department added successfully!");
         break;
 
-      case "Add a Role":
-        try {
-          const departments = await db.query(
-            "SELECT id, name FROM departments"
-          );
+        case "Add a Role":
+          try {
+              const departments = await db.query("SELECT department_id, name FROM departments");
+      
+              const roleInput = await inquirer.prompt([
+                  {
+                      name: "title",
+                      message: "Enter the title of the new role:",
+                  },
+                  {
+                      name: "salary",
+                      message: "Enter the salary for the new role:",
+                  },
+                  {
+                      type: "list",
+                      name: "departmentId",
+                      message: "Select the department for the new role:",
+                      choices: departments[0].map((department) => ({
+                          name: department.name,
+                          value: department.department_id,
+                      })),
+                  },
+              ]);
+      
+              await db.query(
+                  "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)",
+                  [roleInput.title, roleInput.salary, roleInput.departmentId]
+              );
+      
+              console.log("Role added successfully!");
+          } catch (error) {
+              console.error("Error adding role:", error.message);
+          }
+          break;
 
-          const roleInput = await inquirer.prompt([
-            {
-              name: "title",
-              message: "Enter the title of the new role:",
-            },
-            {
-              name: "salary",
-              message: "Enter the salary for the new role:",
-            },
-            {
-              type: "list",
-              name: "departmentId",
-              message: "Select the department for the new role:",
-              choices: departments[0].map((department) => ({
-                name: department.name,
-                value: department.id,
-              })),
-            },
-          ]);
+          case "Add an Employee":
+            try {
+                const roles = await db.query("SELECT role_id, title FROM roles");
+                const managers = await db.query(
+                    "SELECT employee_id, CONCAT(first_name, ' ', last_name) AS manager_name FROM employees"
+                );
+        
+                const employeeInput = await inquirer.prompt([
+                    {
+                        name: "firstName",
+                        message: "Enter the First Name of the new employee:",
+                    },
+                    {
+                        name: "lastName",
+                        message: "Enter the Last Name of the new employee:",
+                    },
+                    {
+                        type: "list",
+                        name: "roleId",
+                        message: "Select the Role for the new employee:",
+                        choices: roles[0].map((role) => ({
+                            name: role.title,
+                            value: role.role_id,
+                        })),
+                    },
+                    {
+                        type: "list",
+                        name: "managerId",
+                        message: "Select the Manager for the new employee:",
+                        choices: managers[0].map((manager) => ({
+                            name: manager.manager_name,
+                            value: manager.employee_id,
+                        })),
+                    },
+                ]);
+        
+                await db.query(
+                    "INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+                    [
+                        employeeInput.firstName,
+                        employeeInput.lastName,
+                        employeeInput.roleId,
+                        employeeInput.managerId,
+                    ]
+                );
+        
+                console.log("Employee added successfully!");
+            } catch (error) {
+                console.error("Error adding employee:", error.message);
+            }
+            break;        
 
-          await db.query(
-            "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)",
-            [roleInput.title, roleInput.salary, roleInput.departmentId]
-          );                       
-
-          console.log("Role added successfully!");
-        } catch (error) {
-          console.error("Error adding role:", error.message);
-        }
-        break;
-
-      case "Add an Employee":
-        try {
-          const roles = await db.query("SELECT id, title FROM roles");
-          const managers = await db.query(
-            "SELECT id, CONCAT(first_name, ' ', last_name) AS manager_name FROM employees"
-          );
-
-          const employeeInput = await inquirer.prompt([
-            {
-              name: "firstName",
-              message: "Enter the First Name of the new employee:",
-            },
-            {
-              name: "lastName",
-              message: "Enter the Last Name of the new employee:",
-            },
-            {
-              type: "list",
-              name: "roleId",
-              message: "Select the Role for the new employee:",
-              choices: roles[0].map((role) => ({
-                name: role.title,
-                value: role.id,
-              })),
-            },
-            {
-              type: "list",
-              name: "managerId",
-              message: "Select the Manager for the new employee:",
-              choices: managers[0].map((manager) => ({
-                name: manager.manager_name,
-                value: manager.id,
-              })),
-            },
-          ]);
-
-          await db.query(
-            "INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
-            [
-              employeeInput.firstName,
-              employeeInput.lastName,
-              employeeInput.roleId,
-              employeeInput.managerId,
-            ]
-          );
-
-          console.log("Employee added successfully!");
-        } catch (error) {
-          console.error("Error adding employee:", error.message);
-        }
-        break;
-
-      case "Update Employee Role":
-        try {
-          const employees = await db.query(
-            "SELECT id, CONCAT(first_name, ' ', last_name) AS employee_name FROM employees"
-          );
-          const roles = await db.query("SELECT id, title FROM roles");
-
-          const updateInput = await inquirer.prompt([
-            {
-              type: "list",
-              name: "employeeId",
-              message: "Select the employee to update:",
-              choices: employees[0].map((employee) => ({
-                name: employee.employee_name,
-                value: employee.id,
-              })),
-            },
-            {
-              type: "list",
-              name: "roleId",
-              message: "Select the new role for the employee:",
-              choices: roles[0].map((role) => ({
-                name: role.title,
-                value: role.id,
-              })),
-            },
-          ]);
-
-          await db.query(
-            "UPDATE employees SET role_id = ? WHERE id = ?",
-            [updateInput.roleId, updateInput.employeeId]
-          );
-
-          console.log("Employee role updated successfully!");
-        } catch (error) {
-          console.error("Error updating employee role:", error.message);
-        }
-        break;
+            case "Update Employee Role":
+              try {
+                  const employees = await db.query(
+                      "SELECT employee_id, CONCAT(first_name, ' ', last_name) AS employee_name FROM employees"
+                  );
+                  const roles = await db.query("SELECT role_id, title FROM roles");
+          
+                  const updateInput = await inquirer.prompt([
+                      {
+                          type: "list",
+                          name: "employeeId",
+                          message: "Select the employee to update:",
+                          choices: employees[0].map((employee) => ({
+                              name: employee.employee_name,
+                              value: employee.employee_id,
+                          })),
+                      },
+                      {
+                          type: "list",
+                          name: "roleId",
+                          message: "Select the new role for the employee:",
+                          choices: roles[0].map((role) => ({
+                              name: role.title,
+                              value: role.role_id,
+                          })),
+                      },
+                  ]);
+          
+                  await db.query(
+                      "UPDATE employees SET role_id = ? WHERE employee_id = ?",
+                      [updateInput.roleId, updateInput.employeeId]
+                  );
+          
+                  console.log("Employee role updated successfully!");
+              } catch (error) {
+                  console.error("Error updating employee role:", error.message);
+              }
+              break;          
 
       default:
         console.log("Invalid selection.");
@@ -223,33 +221,36 @@ async function dbConnection(select) {
 
 function userPrompt() {
   inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "select",
-        message: "What would you like to do?",
-        choices: [
-          "View All Departments",
-          "View All Roles",
-          "View All Employees",
-          "Add a Department",
-          "Add a Role",
-          "Add an Employee",
-          "Update Employee Role",
-          new inquirer.Separator(),
-          "Quit",
-        ],
-      },
-    ])
-    .then(async (res) => {
-      await dbConnection(res.select);
-      if (res.select !== "Quit") {
-        userPrompt();
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      .prompt([
+          {
+              type: "list",
+              name: "select",
+              message: "What would you like to do?",
+              choices: [
+                  "View All Departments",
+                  "View All Roles",
+                  "View All Employees",
+                  "Add a Department",
+                  "Add a Role",
+                  "Add an Employee",
+                  "Update Employee Role",
+                  new inquirer.Separator(),
+                  "Quit",
+              ],
+          },
+      ])
+      .then(async (res) => {
+          if (res.select === "Quit") {
+              console.log("Exiting the application. Goodbye!");
+              process.exit();
+          }
+
+          await dbConnection(res.select);
+          userPrompt();
+      })
+      .catch((err) => {
+          console.log(err);
+      });
 }
 
 userPrompt();
